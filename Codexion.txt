@@ -1,0 +1,9 @@
+do struct that had has every substruct for every context, like Parse etc avoids singleton
+
+parsing 
+
+Reminder: All arguments are mandatory. Reject invalid inputs such
+as negative numbers, non-integers, or a scheduler other than fifo or
+edf.
+
+check valgrind on overflow
