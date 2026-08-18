@@ -1,132 +1,43 @@
 #include "codexion.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
- 
+
 t_codex* codex_return() 
 {
     static t_codex codex;
     return (&codex);
 }
 
-int overflow_checker(long value)
+int dongles_init()
 {
-    if (value > INT_MAX)
-        return (-1);
-    return (0);
-}
-
-int validator_numeric_donglecd(const char *str)
-{
-    size_t i;
-    size_t len;
-    long value;
-
-    i = 0;
-    len = strlen(str);
-    value = 0;
-    if (str[0] == '\0')
-        return (-1);
-    if (len > 10)
-        return (-1);
-    while (i < len)
-    {
-        if (str[i] >= '0' && str[i] <= '9')
-        {
-            value = value * 10 + (str[i] - '0');
-            i++;
-        }
-        else
-            return (-1);
-    }
-    if (overflow_checker(value) == -1)
-        return (-1);
-    else
-        return (value);
-}
-
-int validator_numeric(const char *str)
-{
-    size_t i;
-    size_t counter_zero;
-    long value;
-
-    i = 0;
-    counter_zero = 0;
-    value = 0;
-    if (str[0] == '\0')
-        return (-1);
-    if (strlen(str) > 10)
-        return (-1);
-    while (i < strlen(str))
-    {
-        if (str[i] == '0')
-            counter_zero++;
-        if (str[i] >= '0' && str[i] <= '9')
-        {
-            value = value * 10 + (str[i] - '0');
-            i++;
-        }
-        else
-            return (-1);
-    }
-    if (counter_zero == strlen(str) || overflow_checker(value) == -1)
-        return (-1);
-    else
-        return (value);
-}
-int validator_scheduler(const char *str)
-{
+    t_dongle *dongle_arr;
     t_codex *codex;
-    codex = codex_return();
+    int i;
 
-    if (strcmp(str,"fifo") == 0)
+    codex = codex_return();
+    i = 0;
+    dongle_arr = malloc(codex->number_of_coders * sizeof(t_dongle));
+    if (!(dongle_arr))
+        return (-1);
+    codex->dongles = dongle_arr;
+    while (i < codex->number_of_coders)
     {
-        codex->scheduler = fifo_sched;
-        return (1);
+        pthread_mutex_init(&codex->dongles[i].mutex, NULL);
+        codex->dongles[i].dongle_availability = available;
+        codex->dongles[i].released_time = 0;
+        i++;
     }
-    if (strcmp(str, "edf") == 0)
-    {
-        codex->scheduler = edf_sched;
-        return (1);
-    }
-    else
-        return(-1);
+    return (0);
 }
 
 int main(int argc, char **argv)
 {
     t_codex *codex;
-    int i;
 
-    i = 1;
     codex = codex_return();
     if (argc != 9)
         return (printf("wrong number of arguments\n"), 1);
-    while (i < 3)
-    {
-        if (validator_numeric(argv[i]) == -1)
-            return (printf("Argument %d is of wrong format\n", i), 1);
-        else if (i == 1)
-            codex->number_of_coders = validator_numeric(argv[i]);
-        else if (i == 2)
-            codex->time_to_burnout = validator_numeric(argv[i]);
-        else if (i == 3)
-            codex->time_to_compile = validator_numeric(argv[i]);
-        else if (i == 4)
-            codex->time_to_debug = validator_numeric(argv[i]);
-        else if (i == 5)
-            codex->time_to_refactor = validator_numeric(argv[i]);
-        else if (i == 6)
-            codex->number_of_compiles_required = validator_numeric(argv[i]);            
-        i++;
-    }
-    if (validator_numeric_donglecd(argv[7]) == -1)
-        return (printf("Argument 7 is of wrong format\n"), 1);
-    else
-        codex->dongle_cooldown = validator_numeric_donglecd(argv[7]); 
-    if (validator_scheduler(argv[8]) == -1)
-        return (printf("Argument 8 is of wrong format\n"), 1);
+    if (parser_validator(argv) == 1 || parser_last_validator(argv) == 1)
+        return (1);
+    free(codex->dongles);
+    pthread_mutex_destroy;
     return (0);
 }
