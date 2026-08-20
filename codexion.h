@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 typedef enum e_scheduler
 {
@@ -16,6 +19,7 @@ typedef struct s_dongle
     pthread_mutex_t mutex;
     long            released_time;
     enum            {available, taken} dongle_availability;
+    pthread_cond_t thread_sleep;
 
 } t_dongle;
 
@@ -52,3 +56,12 @@ int validator_numeric(const char *str);
 int validator_scheduler(const char *str);
 int parser_validator(char **argv);
 int parser_last_validator(char **argv);
+int dongles_init();
+int coders_init();
+void dongle_order(t_coder *coder, int *first_dongle, int *second_dongle);
+long timeofday_converter();
+void get_dongle(int i);
+void let_dongle(int i);
+void let_both_dongles(t_coder *coder);
+void get_both_dongles(t_coder *coder);
+void *coder_journey(void *arg);
